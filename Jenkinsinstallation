@@ -1,6 +1,11 @@
-docker run -d \
-  --name jenkins \
-  -p 8080:8080 \
-  -p 50000:50000 \
-  -v jenkins_home:/var/jenkins_home \
-  jenkins/jenkins:lts
+#!/bin/bash
+set -e
+
+echo "Workspace:"
+pwd
+ls -l
+
+chmod +x cleanup_release_files.sh
+./cleanup_release_files.sh
+
+echo "Release cleanup executed"
