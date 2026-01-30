@@ -1,11 +1,10 @@
-#!/bin/bash
-set -e
-
-echo "Workspace:"
-pwd
 ls -l
 
-chmod +x cleanup_release_files.sh
-./cleanup_release_files.sh
+# Fix Windows line endings (CRLF -> LF)
+sed -i 's/\r$//' cleanup_release_files.sh
 
-echo "Release cleanup executed"
+# Ensure correct shell
+chmod +x cleanup_release_files.sh
+
+# Run explicitly with bash (most reliable)
+bash cleanup_release_files.sh
