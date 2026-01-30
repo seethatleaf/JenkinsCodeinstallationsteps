@@ -1,12 +1,6 @@
-sudo rm -f /etc/apt/sources.list.d/jenkins.list
-sudo rm -f /usr/share/keyrings/jenkins-keyring.*
-ls /usr/share/keyrings | grep jenkins
-
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
-| sudo gpg --dearmor -o /usr/share/keyrings/jenkins-keyring.gpg
-ls -l /usr/share/keyrings/jenkins-keyring.gpg
-
-echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/" \
-| sudo tee /etc/apt/sources.list.d/jenkins.list
-
-sudo apt install -y openjdk-17-jdk
+docker run -d \
+  --name jenkins \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts
