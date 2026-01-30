@@ -1,17 +1,12 @@
 sudo rm -f /etc/apt/sources.list.d/jenkins.list
-sudo rm -f /etc/apt/sources.list.d/jenkins*
-sudo rm -f /usr/share/keyrings/jenkins-keyring.asc
-sudo rm -f /usr/share/keyrings/jenkins*
+sudo rm -f /usr/share/keyrings/jenkins-keyring.*
+ls /usr/share/keyrings | grep jenkins
 
-ls /etc/apt/sources.list.d/
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
+| sudo gpg --dearmor -o /usr/share/keyrings/jenkins-keyring.gpg
+ls -l /usr/share/keyrings/jenkins-keyring.gpg
 
-sudo apt update
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/" \
+| sudo tee /etc/apt/sources.list.d/jenkins.list
 
-sudo mkdir -p /usr/share/keyrings
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-
-ls -l /usr/share/keyrings/jenkins-keyring.asc
-
-echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list
-
-
+sudo apt install -y openjdk-17-jdk
