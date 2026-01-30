@@ -1,10 +1,12 @@
+set -e
+
 ls -l
 
-# Fix Windows line endings (CRLF -> LF)
+# Fix Windows line endings (important)
 sed -i 's/\r$//' cleanup_release_files.sh
 
-# Ensure correct shell
+# Ensure executable
 chmod +x cleanup_release_files.sh
 
-# Run explicitly with bash (most reliable)
+# Execute cleanup
 bash cleanup_release_files.sh
