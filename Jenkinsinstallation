@@ -1,12 +1,25 @@
-set -e
+#!/bin/bash
 
-ls -l
+BASE_FILE="BASE/releasefile/user_stories_BASE"
+SIT_FILE="SITFULL/releasefile/user_stories_SITFULL"
 
-# Fix Windows line endings (important)
-sed -i 's/\r$//' cleanup_release_files.sh
+if [[ ! -f "$BASE_FILE" || ! -f "$SIT_FILE" ]]; then
+  echo "ERROR: One or both release files missing"
+  exit 1
+fi
 
-# Ensure executable
-chmod +x cleanup_release_files.sh
+BASE_CONTENT=$(sed '/^\s*$/d' "$BASE_FILE")
+SIT_CONTENT=$(sed '/^\s*$/d' "$SIT_FILE")
 
-# Execute cleanup
-bash cleanup_release_files.sh
+echo "Comparing BASE and SITFULL release files..."
+
+if [[ "$BASE_CONTENT" == "$SIT_CONTENT" ]]; then
+  echo "Files are SAME → clearing BOTH"
+  > "$BASE_FILE"
+  > "$SIT_FILE"
+else
+  echo "Files are DIFFERENT → clearing SITFULL only"
+  > "$SIT_FILE"
+fi
+
+echo "Cleanup completed"
