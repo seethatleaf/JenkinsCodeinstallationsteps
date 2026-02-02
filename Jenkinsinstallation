@@ -1,11 +1,11 @@
-sudo rm -f /etc/apt/sources.list.d/jenkins.list
-sudo rm -f /usr/share/keyrings/jenkins-keyring.*
-sudo mkdir -p /usr/share/keyrings
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo gpg --dearmor -o /usr/share/keyrings/jenkins.gpg
+wget https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+gpg --dearmor jenkins.io-2023.key
+sudo mv jenkins.io-2023.key.gpg /usr/share/keyrings/jenkins.gpg
+ls -l /usr/share/keyrings/jenkins.gpg
 echo "deb [signed-by=/usr/share/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list
 sudo apt update
-sudo apt update
+sudo apt install jenkins -y
+sudo systemctl daemon-reload
 sudo systemctl start jenkins
 sudo systemctl enable jenkins
 sudo systemctl status jenkins
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
