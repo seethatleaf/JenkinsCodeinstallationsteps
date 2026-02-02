@@ -1,11 +1,9 @@
-wget https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
-gpg --dearmor jenkins.io-2023.key
-sudo mv jenkins.io-2023.key.gpg /usr/share/keyrings/jenkins.gpg
-ls -l /usr/share/keyrings/jenkins.gpg
-echo "deb [signed-by=/usr/share/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list
-sudo apt update
-sudo apt install jenkins -y
-sudo systemctl daemon-reload
-sudo systemctl start jenkins
-sudo systemctl enable jenkins
-sudo systemctl status jenkins
+sudo docker run -d \
+  --name jenkins \
+  -p 8080:8080 -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts
+
+sudo docker ps
+
+sudo docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
