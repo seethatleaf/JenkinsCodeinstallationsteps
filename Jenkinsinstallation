@@ -1,44 +1,42 @@
 #!/bin/bash
+
 set -e
 
-echo "🌿 Starting intelligent release cleanup..."
-
-BASE_FILE="BASE/releasefile/user_stories_BASE"
-SIT_FILE="SITFULL/releasefile/user_stories_SITFULL"
-
-# ---------- Git identity (required for push) ----------
+echo "🌿 Configuring git identity"
 git config user.email "jenkins@demo.com"
 git config user.name "jenkins-bot"
 
-# ---------- Safety check ----------
-if [ ! -f "$BASE_FILE" ] || [ ! -f "$SIT_FILE" ]; then
-  echo "Files not found. Skipping cleanup."
-  exit 0
-fi
+echo "🌿 Fetching branches"
+git fetch origin
 
-# ---------- Compare ----------
-if cmp -s "$BASE_FILE" "$SIT_FILE"; then
-  echo "✅ Files are SAME → clearing BOTH"
+echo "🌿 Checking differences between BASE and SITFULL"
 
-  > "$BASE_FILE"
-  > "$SIT_FILE"
+BASE_HASH=$(git rev-parse origin/BASE:releasefile/user_stories.txt || echo "none")
+SIT_HASH=$(git rev-parse origin/SITFULL:releasefile/user_stories.txt || echo "none")
+
+echo "BASE hash: $BASE_HASH"
+echo "SIT hash : $SIT_HASH"
+
+if [ "$BASE_HASH" = "$SIT_HASH" ]; then
+    echo "✅ Files same → clean BOTH"
+    
+    git checkout BASE
+    rm -rf releasefile/*
+    git commit -am "cleanup BASE" || echo "no changes"
+    git push origin BASE
+
+    git checkout SITFULL
+    rm -rf releasefile/*
+    git commit -am "cleanup SITFULL" || echo "no changes"
+    git push origin SITFULL
 
 else
-  echo "⚠️ Files are DIFFERENT → clearing ONLY SITFULL"
+    echo "⚠ Files different → clean only SITFULL"
 
-  > "$SIT_FILE"
+    git checkout SITFULL
+    rm -rf releasefile/*
+    git commit -am "cleanup SITFULL only" || echo "no changes"
+    git push origin SITFULL
 fi
 
-# ---------- Commit only if changes ----------
-git add .
-
-git diff --cached --quiet && {
-  echo "Nothing changed. Skipping commit."
-  exit 0
-}
-
-git commit -m "Auto cleanup release files after merge"
-
-git push origin BASE
-
-echo "🌿 Cleanup completed successfully"
+echo "🌸 Cleanup completed"
