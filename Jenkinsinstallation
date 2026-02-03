@@ -1,38 +1,61 @@
 #!/bin/bash
-
 set -e
 
+echo "🌿 Starting Release Cleanup Job..."
+
+# -------------------------
+# Git identity
+# -------------------------
 git config user.email "jenkins@demo.com"
 git config user.name "jenkins-bot"
 
+# -------------------------
+# Fetch latest
+# -------------------------
 git fetch origin
 
-echo "Comparing files..."
+BASE_HASH=$(git rev-parse origin/BASE)
+SIT_HASH=$(git rev-parse origin/SITFULL)
 
-BASE_HASH=$(git rev-parse origin/BASE:releasefile/user_stories.txt || echo "none")
-SIT_HASH=$(git rev-parse origin/SITFULL:releasefile/user_stories.txt || echo "none")
+echo "BASE  : $BASE_HASH"
+echo "SIT   : $SIT_HASH"
 
+echo "Checking differences..."
+
+# -------------------------
+# SAME → clean BOTH
+# -------------------------
 if [ "$BASE_HASH" = "$SIT_HASH" ]; then
-    echo "Same → clean BOTH"
+    echo "Same → cleaning BOTH branches"
 
     git checkout BASE
     rm -rf releasefile/*
     git add .
-    git commit -m "cleanup BASE" || true
-    git push origin BASE
+    git commit -m "cleanup BASE" || echo "Nothing to commit"
 
     git checkout SITFULL
     rm -rf releasefile/*
     git add .
-    git commit -m "cleanup SITFULL" || true
-    git push origin SITFULL
+    git commit -m "cleanup SITFULL" || echo "Nothing to commit"
 
+# -------------------------
+# DIFFERENT → clean SITFULL only
+# -------------------------
 else
-    echo "Different → clean only SITFULL"
+    echo "Different → cleaning SITFULL only"
 
     git checkout SITFULL
     rm -rf releasefile/*
     git add .
-    git commit -m "cleanup SITFULL only" || true
-    git push origin SITFULL
+    git commit -m "cleanup SITFULL" || echo "Nothing to commit"
 fi
+
+# -------------------------
+# PUSH (IMPORTANT FIX)
+# -------------------------
+echo "Pushing changes to GitHub..."
+
+git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/seethatleaf/releasedemoliveforyou.git BASE
+git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/seethatleaf/releasedemoliveforyou.git SITFULL
+
+echo "✅ Cleanup completed successfully"
