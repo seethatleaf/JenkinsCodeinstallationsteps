@@ -1,6 +1,41 @@
-docker run -d \
-  --name jenkins \
-  -p 8080:8080 \
-  -p 50000:50000 \
-  -v jenkins_home:/var/jenkins_home \
-  jenkins/jenkins:lts
+pipeline {
+    agent any
+
+    environment {
+        GIT_CREDS = 'github-creds'
+    }
+
+    stages {
+
+        stage('Clone Repo') {
+            steps {
+                git branch: 'BASE',
+                    credentialsId: "${GIT_CREDS}",
+                    url: 'https://github.com/seethatleaf/releasedemoliveforyou.git'
+            }
+        }
+
+        stage('Cleanup Release Files') {
+            steps {
+                sh '''
+                echo "" > BASE/releasefile/user_stories_BASE
+                echo "" > SITFULL/releasefile/user_stories_SITFULL
+                '''
+            }
+        }
+
+        stage('Commit & Push') {
+            steps {
+                sh '''
+                git config user.email "jenkins@demo.com"
+                git config user.name "jenkins-bot"
+
+                git add .
+                git commit -m "Auto cleanup release files" || echo "Nothing to commit"
+
+                git push origin BASE
+                '''
+            }
+        }
+    }
+}
