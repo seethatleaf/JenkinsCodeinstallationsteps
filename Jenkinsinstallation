@@ -1,61 +1,46 @@
 #!/bin/bash
 set -e
 
-echo "🌿 Starting Release Cleanup Job..."
+echo "Starting Release Cleanup Job..."
 
-# -------------------------
-# Git identity
-# -------------------------
 git config user.email "jenkins@demo.com"
 git config user.name "jenkins-bot"
 
-# -------------------------
-# Fetch latest
-# -------------------------
 git fetch origin
 
 BASE_HASH=$(git rev-parse origin/BASE)
 SIT_HASH=$(git rev-parse origin/SITFULL)
 
-echo "BASE  : $BASE_HASH"
-echo "SIT   : $SIT_HASH"
+echo "BASE : $BASE_HASH"
+echo "SIT  : $SIT_HASH"
 
 echo "Checking differences..."
 
-# -------------------------
-# SAME → clean BOTH
-# -------------------------
 if [ "$BASE_HASH" = "$SIT_HASH" ]; then
-    echo "Same → cleaning BOTH branches"
+    echo "Same → cleaning BOTH"
 
     git checkout BASE
     rm -rf releasefile/*
     git add .
-    git commit -m "cleanup BASE" || echo "Nothing to commit"
+    git commit -m "cleanup BASE" || true
 
     git checkout SITFULL
     rm -rf releasefile/*
     git add .
-    git commit -m "cleanup SITFULL" || echo "Nothing to commit"
+    git commit -m "cleanup SITFULL" || true
 
-# -------------------------
-# DIFFERENT → clean SITFULL only
-# -------------------------
 else
     echo "Different → cleaning SITFULL only"
 
     git checkout SITFULL
     rm -rf releasefile/*
     git add .
-    git commit -m "cleanup SITFULL" || echo "Nothing to commit"
+    git commit -m "cleanup SITFULL" || true
 fi
 
-# -------------------------
-# PUSH (IMPORTANT FIX)
-# -------------------------
 echo "Pushing changes to GitHub..."
 
-git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/seethatleaf/releasedemoliveforyou.git BASE
-git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/seethatleaf/releasedemoliveforyou.git SITFULL
+git push origin BASE
+git push origin SITFULL
 
-echo "✅ Cleanup completed successfully"
+echo "Cleanup completed successfully"
