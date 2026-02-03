@@ -1,11 +1,44 @@
-echo "🌿 Cleaning release files..."
+#!/bin/bash
+set -e
 
-echo "" > BASE/releasefile/user_stories_BASE
-echo "" > SITFULL/releasefile/user_stories_SITFULL
+echo "🌿 Starting intelligent release cleanup..."
 
+BASE_FILE="BASE/releasefile/user_stories_BASE"
+SIT_FILE="SITFULL/releasefile/user_stories_SITFULL"
+
+# ---------- Git identity (required for push) ----------
 git config user.email "jenkins@demo.com"
 git config user.name "jenkins-bot"
 
+# ---------- Safety check ----------
+if [ ! -f "$BASE_FILE" ] || [ ! -f "$SIT_FILE" ]; then
+  echo "Files not found. Skipping cleanup."
+  exit 0
+fi
+
+# ---------- Compare ----------
+if cmp -s "$BASE_FILE" "$SIT_FILE"; then
+  echo "✅ Files are SAME → clearing BOTH"
+
+  > "$BASE_FILE"
+  > "$SIT_FILE"
+
+else
+  echo "⚠️ Files are DIFFERENT → clearing ONLY SITFULL"
+
+  > "$SIT_FILE"
+fi
+
+# ---------- Commit only if changes ----------
 git add .
-git commit -m "Auto cleanup release files" || echo "Nothing to commit"
+
+git diff --cached --quiet && {
+  echo "Nothing changed. Skipping commit."
+  exit 0
+}
+
+git commit -m "Auto cleanup release files after merge"
+
 git push origin BASE
+
+echo "🌿 Cleanup completed successfully"
