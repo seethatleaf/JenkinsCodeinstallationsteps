@@ -1,31 +1,6 @@
-git config user.email "jenkins@demo.com"
-git config user.name "jenkins-bot"
-
-git fetch origin
-
-BASE_HASH=$(git rev-parse origin/BASE)
-SIT_HASH=$(git rev-parse origin/SITFULL)
-
-echo "Checking differences..."
-
-if [ "$BASE_HASH" = "$SIT_HASH" ]; then
-    echo "Same → clean both"
-    git checkout BASE
-    rm -rf releasefile/*
-    git add .
-    git commit -m "cleanup BASE" || true
-    git push
-
-    git checkout SITFULL
-    rm -rf releasefile/*
-    git add .
-    git commit -m "cleanup SITFULL" || true
-    git push
-else
-    echo "Different → clean SITFULL only"
-    git checkout SITFULL
-    rm -rf releasefile/*
-    git add .
-    git commit -m "cleanup SITFULL" || true
-    git push
-fi
+docker run -d \
+  --name jenkins \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts
