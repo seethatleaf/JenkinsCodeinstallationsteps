@@ -40,7 +40,7 @@ fi
 
 echo "Pushing changes to GitHub..."
 
-git push origin BASE
-git push origin SITFULL
+git push -f origin BASE
+git push -f origin SITFULL
 
 echo "Cleanup completed successfully"
